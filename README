@@ -1,0 +1,177 @@
+How to Export and Import Docker Containers and images
+Last Updated : 23 Jul, 2025
+In software development, flexibility and portability are important. Suppose you’ve built a perfect application in a Docker container on your development machine and now you need to move this same setup to a colleague’s machine or a production server. How do you ensure your application, and all its dependencies and config, moves without a hitch? The answer is in exporting and importing Docker containers and images.
+
+This post will walk you through the steps to export and import Docker containers and images so you can move your work across environments. Whether you’re sharing with a team, moving to a new server, or just backing up your containers, you must master these techniques. Let’s get started and learn how to make your Dockerized applications as portable as possible.
+
+Key Terminologies
+Docker
+Docker is an open-source platform designed to automate the deployment of applications as lightweight, portable containers that run virtually anywhere. Docker is a platform that uses containerization to streamline software development.
+
+Docker Image
+A Docker image is a read-only template used to create containers. It is a lightweight, executable, stand-alone package that includes everything needed to run the software, including the code, a runtime, libraries, environment variables, and config files.
+
+Container
+A container is a runtime instance of an image. It provides a way to run an application in an isolated environment, encapsulating all the necessary dependencies and libraries, and eliminating potential conflicts between applications.
+
+Dockerfile
+A Dockerfile is a simple text file that contains a set of commands that Docker uses sequentially to build an image. To read more about Dockerfile, you can read this article.
+
+Exporting and Importing Docker Images
+Step-by-Step Process to Export a Docker Image
+1. Identify the Image ID or Name: To export an image, you need its ID or name. List all images using:
+
+docker images
+2. Save the Image: Use the docker save command to save the image to a tarball.
+
+docker save -o <filename>.tar <image_name>
+3. Verify the Saved Image: Ensure that the tarball has been created successfully in the specified location.
+
+Step-by-Step Process to Import a Docker Image
+1. Transfer the Tarball: Move the tarball to the target system where you want to import the image.
+
+2. Load the Image: Use the docker load command to load the image from the tarball.
+
+docker load -i <filename>.tar
+3. Verify the Loaded Image: List all images to verify the image has been loaded.
+
+docker images
+Exporting and Importing Docker Containers
+Step by Step Process to Export a Docker Container
+1. Identify the Container ID or Name: To export a container, you need its ID or name. You can list all running containers using the following command:
+
+docker ps
+2. Export the Container: Use the docker export command to export the container to a tarball.
+
+docker export <container_id> -o <filename>.tar
+3. Verify the Exported File: Ensure that the tarball has been created successfully in the specified location.
+
+Step by Step Process to Import a Docker Container
+1. Transfer the Tarball: Move the tarball to the target system where you want to import the container.
+
+2. Import the Container: Use the docker import command to import the tarball into Docker as an image.
+
+docker import <filename>.tar <new_image_name>
+Note: Importing a Docker container involves converting the exported tarball of a container's filesystem back into a Docker image instead. This process does not directly create a new running container but provides an image from which you can launch new containers.
+
+
+3. Run a New Container: Create and run a new container from the imported image.
+
+Example: Exporting and Importing Docker Images and Containers
+Project Setup
+Let's setup a basic express server to illustrate the whole process from spinning up a container to exporting it:
+
+1. Create a package.json file to manage the project dependencies.
+
+File: package.json
+
+{
+  "name": "basic-express-server",
+  "version": "1.0.0",
+  "description": "Demo for exporting and importing docker containers/images",
+  "main": "./src/app.js",
+  "scripts": {
+    "start": "node ./src/app.js"
+  },
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
+Run npm install to install the dependencies.
+
+2. Create a file named app.js in src folder.
+
+File: src/app.js
+
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+});
+3. Let's create a Dockerfile to containerize the Express server.
+
+File: Dockerfile
+
+FROM node
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+CMD [ "npm", "start" ]
+
+EXPOSE 3000
+4. Create a .dockerignore file to prevent copying unnecessary files to the Docker image.
+
+File: .dockerignore
+
+node_modules
+npm-debug.log
+Folder Structure
+This is how your folder structure should look like after following the above steps:
+
+file
+5. Let's build an image of our Express server by running this command:
+
+docker build -t basic-express-server .
+6. Verify the created image by listing all the images:
+
+docker image ls
+Docker-ImportExport-(1)
+Exporting Docker Image
+1. Save the image to a tarball:
+
+docker save -o demo-image.tar basic-express-server
+where,
+-o, --output string Write to a file, instead of STDOUT
+
+Check if the tarball file is generated or not.
+
+file
+2. Let's first our already built image so that we can load the image again using the tarball file. You can remove the image using this command:
+
+docker rmi <image_id>
+Check whether the image is deleted or not by listing all the images.
+
+Importing Docker Image
+3. Now, let's load the image again using the tarball file:
+
+docker load -i demo-image.tar
+docker-load
+Again, list all the images to see the newly loaded image.
+
+4. Let's now run a container using this image:
+
+docker run -p 3000:3000 -d basic-express-server
+You can list down the running containers using:
+
+docker ps
+Docker-ImportExport-(3)
+Exporting Docker Container
+5. To export this container, run:
+
+docker export cff6965045e1 -o container.tar
+A tarball file will be created named container.tar:
+
+file
+Importing Docker Container
+6. Import the Docker container by running:
+
+docker import container.tar new-image
+file
+List all the images and verify if the new image is present there or not.
+
+7. Run a container using the new image created by importing the tarball file and check if everything is working fine.
+
