@@ -1,0 +1,14 @@
+{
+  "name": "basic-express-server",
+  "version": "1.0.0",
+  "description": "Demo for exporting and importing docker containers/images",
+  "main": "./src/app.js",
+  "scripts": {
+    "start": "node ./src/app.js"
+  },
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
