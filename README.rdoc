@@ -174,4 +174,3 @@ file
 List all the images and verify if the new image is present there or not.
 
 7. Run a container using the new image created by importing the tarball file and check if everything is working fine.
-
